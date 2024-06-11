@@ -1,0 +1,17 @@
+Procedimento:
+Utilizamos grupos de amostras aleatórias de quatro tipos diferentes de distribuição com nível de significância 0.05:
+
+- ProdMaqAgric: Conjunto de dados que representa alguma medida relacionada a produção de uma máquina agrícola. São 36 valores numéricos. Este teste espera que o teste de Shapiro-Wilk seja bem-sucedido, ou seja, que a amostra passe no teste de normalidade.
+
+- Normal: Conjunto de dados gerado aleatoriamente a partir de uma distribuição normal com média 30 e desvio padrão 5, contendo 36 valores. Este teste também espera um resultado positivo no teste de Shapiro-Wilk, pois os dados são gerados a partir de uma distribuição normal.
+
+- Gama: Conjunto de dados é gerado aleatoriamente a partir de uma distribuição gama com parâmetros 2 e 2, contendo 36 valores. Espera-se que o teste de Shapiro-Wilk falhe neste caso, pois os dados não são provenientes de uma distribuição normal.
+
+- Cauchy padrão: Conjunto de dados é gerado aleatoriamente a partir de uma distribuição de Cauchy padrão, contendo 36 valores. Assim como no teste anterior, espera-se que o teste de Shapiro-Wilk falhe, já que os dados não seguem uma distribuição normal.
+
+Lembrando que:
+
+Nível de significância = 0.05
+
+Wcalc >= Wcrítico: não rejeitamos H0
+Wcalc < Wcrítico: rejeitamos H0
