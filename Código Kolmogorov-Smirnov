@@ -1,0 +1,208 @@
+from numpy.random import seed
+from numpy.random import normal
+from numpy.random import exponential
+from scipy.stats import kstest, norm, uniform, expon, poisson
+import numpy as np
+import math
+import matplotlib.pyplot as plt
+from math import sqrt
+import scipy.stats as stats
+
+#histograma
+def HistogramaSimples(data):
+
+    plt.hist(data, bins=15, color='blue', edgecolor='black')
+    plt.title('Distribuição de Dados')
+    plt.xlabel('Valores')
+    plt.ylabel('Frequência')
+    plt.grid(True)
+    plt.show()
+
+def HistogramaComparativo(data):
+
+    #data é um array de arrays
+
+    plt.figure(figsize=(10,5))
+    plt.title('Distribuição de Dados')
+    plt.xlabel('Valores')
+    plt.ylabel('Frequência')
+    plt.grid(True)
+
+    for i in range(len(data)):
+        plt.hist(data[i], bins=15, color='blue', edgecolor='black', alpha=0.5)
+
+def KolmogorovSmirnov(rol,Dtab,tamanho=35,dist=None, graf = True):
+
+    print('\nKolmogorov-Smirnov\n')
+
+    #H0 = Fobs(x) = Fesp(x)
+    #H1 = Fobs(x) != Fesp(x)
+
+
+
+    # Dcalc = max{|Fesp(x) - Fob(x)|,|fsp(x) - Fob(x-1)|}
+    #Fesp = Frequencia relativa
+    #Fob = Frequencia relativa acumulada
+    Media = rol.mean()
+    Variancia = rol.var()
+    DesvioPadrao = rol.std()
+    mediana = np.median(rol)
+    min = rol.min()
+    maximum = rol.max()
+    soma = rol.sum()
+
+
+
+
+    if graf:
+        HistogramaSimples(rol)
+        print('Media = ',Media)
+        print('Variancia = ',Variancia)
+        print('DesvioPadrao = ',DesvioPadrao)
+        print("Mediana = ",mediana)
+        print("Minimo = ",min)
+        print("Maximo = ",maximum)
+        print("Soma = ",soma)
+        print("Contagem = ",tamanho)
+
+
+        Tabela = pd.DataFrame(columns=['xi','Fobs','Fa','Fra','zcalc','fesp','|fesp(xi) - fra(xi)|','|fesp(xi) - fra(xi-1)|'])
+
+        tabG = {'0.20':1.07/sqrt(tamanho),'0.15':1.14/sqrt(tamanho),'0.10':1.22/sqrt(tamanho),'0.05':1.36/sqrt(tamanho),'0.025':1.48/sqrt(tamanho),'0.01':1.63/sqrt(tamanho),'0.005':1.73/sqrt(tamanho)}
+
+        Tabela['xi'], Tabela['Fobs'] = np.unique(rol, return_counts=True)
+        Tabela['Fa'] = Tabela['Fobs'].cumsum()
+        Tabela['Fra'] = Tabela['Fa']/Tabela['Fobs'].sum() #Frequencia relativa acumulada --> Fob.sum = tamanho da rol
+        Tabela['zcalc'] = (Tabela['xi'] - Media)/DesvioPadrao
+        Tabela['fesp'] = norm.cdf(Tabela['zcalc'])
+        Tabela['|fesp(xi) - fra(xi)|'] = abs(Tabela['fesp'] - Tabela['Fra'])
+        Tabela['|fesp(xi) - fra(xi-1)|'] = abs(Tabela['fesp'] - Tabela['Fra'].shift(1))
+        #Adicionando o primeiro item na coluna |fesp(xi) - fra(xi-1)|
+        Tabela.loc[0,'|fesp(xi) - fra(xi-1)|'] = abs(Tabela.loc[0,'fesp'] - 0)
+
+        #Dcalc = Maximo de |fesp(xi) - fra(xi)| e |fesp(xi) - fra(xi-1)|
+
+        Dcalc = max(abs(Tabela['|fesp(xi) - fra(xi)|'].max()),abs(Tabela['|fesp(xi) - fra(xi-1)|'].max()))
+        #Usar p-valores (Distribuição Normal inversa e verifica se p-valor >= alpha) ->  Hipotese H1,casso contrario H0
+
+        #Dtab = TabelaG.loc[tamanho-1,alpha]
+        # Dtab = tabG.loc[tamanho-1,str(alpha)]
+
+        if graf:
+            Tabela
+
+        print(f'Dcalc nosso = {Dcalc}')
+
+
+        if dist == 'gamma':
+          D_plus = np.max(np.abs(Tabela['|fesp(xi) - fra(xi)|']))
+          D_minus = np.max(np.abs(Tabela['|fesp(xi) - fra(xi-1)|']))
+          Dcalc = max(D_plus, D_minus)
+          statistica, p_valor = kstest(rol, dist, args=(2,1))
+          print(f'Dcalc do scipy = {statistica}')
+        elif dist =='norm':
+          statistica, p_valor = kstest(rol, dist, args=(Media,DesvioPadrao))
+          print(f'Dcalc do scipy = {statistica}')
+        elif dist == 'cauchy':
+          statistica, p_valor = kstest(rol, dist, args=(mediana, 1))
+          print(f'Dcalc do scipy = {statistica}')
+        elif dist == 'poisson':
+          lam = np.mean(rol)
+          statistica, p_valor = kstest(rol, lambda k: stats.poisson.cdf(k, lam))
+          print(f'Dcalc do scipy = {statistica}')
+
+        #Se Dcalc < Dtab --> Aceita H0
+        if Dcalc < Dtab:
+            print('\nDcalc < Dtab --> Aceita H0')
+            return True
+
+        #Caso contrario --> Rejeita H0
+        else:
+            print('\nDcalc > Dtab --> Rejeita H0')
+            return False
+
+# Casos de teste
+
+ProdBienalAvioes = np.array([15, 16, 18, 19, 20, 22, 23, 23, 24, 24, 25, 28, 28, 29, 30, 30, 21, 32, 32, 34, 46, 36, 29, 16, 32, 20, 23, 23, 12, 25, 37, 27, 34 , 26, 34]) # amostra manual
+Mi = 30
+sigma = 5
+Normal = np.random.normal(Mi,sigma,35) # amostra normal
+cauchy = np.random.standard_cauchy(35) # amostra cauchy
+
+poisson_dist = poisson(mu=1)
+amostras_poisson = poisson_dist.rvs(size=35) # amostra poisson
+
+KolmogorovSmirnov(ProdBienalAvioes,0.23,35) # Dc = 0,23
+KolmogorovSmirnov(Normal, 0.23, 35, 'norm')
+KolmogorovSmirnov(cauchy,0.23,35, 'cauchy')
+KolmogorovSmirnov(amostras_poisson, 0.23, 35, 'poisson')
+
+
+# tabela resumo dos resultados
+
+from pandas.plotting import table
+
+dados = {
+    "Distribuicao": ["ProdBienal", "Normal", "Cauchy", "Poisson"],
+    "H0": ["Aceito", "Aceito", "Rejeitado", "Rejeitado"],
+    "H1": ["Rejeitado", "Rejeitado", "Aceito", "Aceito"]
+}
+
+# Convertendo os dados para um DataFrame do pandas
+df = pd.DataFrame(dados)
+
+# Criando uma figura sem eixos para a plotagem da tabela
+fig, ax = plt.subplots(figsize=(8, 3))
+ax.axis('off') # Esconde os eixos
+
+# Plotando a tabela
+# O loc='center' centraliza a tabela na figura
+# O bbox_to_anchor ajusta a posição da tabela dentro da figura
+tbl = table(ax, df, loc='center', cellLoc='center', bbox=[0, 0, 1, 1])
+
+# Ajustando o estilo da tabela
+tbl.auto_set_font_size(False)
+tbl.set_fontsize(12) # Ajusta o tamanho da fonte
+tbl.auto_set_column_width(col=list(range(len(df.columns)))) # Ajusta a largura das colunas
+
+plt.title("Teste Kolmogorov-Smirnov")
+
+plt.show()
+
+# alguns testes adicionais
+import random
+
+
+# Número de amostras
+num_amostras = 10
+
+# Lista para guardar as amostras
+lista_de_amostras = []
+
+# Gerar as amostras e adicionar à lista
+for _ in range(num_amostras):
+    amostra = np.random.rand(35)  # Gerar uma amostra de tamanho 36
+    lista_de_amostras.append(amostra)
+
+for _ in range(num_amostras):
+    amostra = np.random.standard_cauchy(35)  # Gerar uma amostra de tamanho 36 com distribuição normal
+    lista_de_amostras.append(amostra)
+
+random.shuffle(lista_de_amostras)
+
+resultados = []
+
+for a in lista_de_amostras:
+
+  if KolmogorovSmirnov(a, 0.23, 35, False) == True:
+    resultados.append('aceita H0')
+  elif KolmogorovSmirnov(a, 0.23, 35, False) == False:
+    resultados.append('rejeita H0')
+
+
+print(resultados)
+
+plot_hist(resultados,*lista_de_amostras)
+
+
+
