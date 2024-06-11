@@ -1,0 +1,16 @@
+Procedimento:
+Utilizamos grupos de amostras com tamanho 35, de quatro tipos diferentes de distribuição com nível de significância 0.05:
+- Desconhecida
+- Normal
+- Cauchy
+- Poisson
+
+Calculamos o Dcalc, que é a máxima diferença absoluta entre a Função de Distribuição Acumulada Empírica e a Função de Distribuição Acumulada Teórica;
+Calculamos o Dc utilizando a tabela e comparamos com Dcalc com o objetivo de analisar se a H0 será aceita ou rejeitada.
+
+Lembrando que:
+
+Nível de significância = 0.05
+
+Dcalc > Dcrítico: rejeitamos H0
+Dcalc < Dcrítico: não rejeitamos H0
