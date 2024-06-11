@@ -2,7 +2,7 @@
 Projeto final da disciplina Inferência e Estatística.
 
 Grupo: 
-Beatriz Barreto
-Jéssica Nagahama
+Beatriz Barreto, 
+Jéssica Nagahama, 
 Paloma Duarte
        
