@@ -1,0 +1,213 @@
+# função para plotar
+def HistogramaSimples(data):
+
+    plt.hist(data, bins=20, color='blue', edgecolor='black')
+    plt.title('Distribuição de Dados')
+    plt.xlabel('Valores')
+    plt.ylabel('Frequência')
+    plt.grid(True)
+    plt.show()
+
+def HistogramaComparativo(data):
+
+    #data é um array de arrays
+
+    plt.figure(figsize=(10,5))
+    plt.title('Distribuição de Dados')
+    plt.xlabel('Valores')
+    plt.ylabel('Frequência')
+    plt.grid(True)
+
+    for i in range(len(data)):
+        plt.hist(data[i], bins=20, color='blue', edgecolor='black', alpha=0.5)
+
+#Modulos
+import numpy as np
+import pandas as pd
+
+from scipy.stats import *
+from math import sqrt
+from matplotlib import pyplot as plt
+
+def ShapiroWilk(rol,alpha=0.05,tamanho=36):
+
+    print('\nShapiro-Wilk\n')
+    print("\nHipotese:\n")
+    print("H0 = A amostra segue uma distribuição normal")
+    print("H1 = A amostra não segue uma distribuição normal")
+
+
+
+    Media = rol.mean()
+    Variancia = rol.var()
+    DesvioPadrao = rol.std()
+    mediana = np.median(rol)
+    max = rol.max()
+    min = rol.min()
+    soma = rol.sum()
+
+
+    print('Media = ',Media)
+    print('Variancia = ',Variancia)
+    print('DesvioPadrao = ',DesvioPadrao)
+    print("Mediana = ",mediana)
+    print("Minimo = ",min)
+    print("Maximo = ",max)
+    print("Soma = ",soma)
+    print("Contagem = ",tamanho)
+
+    HistogramaSimples(rol)
+
+
+
+    if tamanho <= 30:
+
+
+        Tabela = pd.DataFrame(columns=['i','n-(i-1)','ain','xn-(i-1)','xi','ain(xn-(i-1)-xi'])
+
+        Tabela['i'] = np.arange(1,(tamanho+1)/2)
+        Tabela['n-(i-1)'] = tamanho - Tabela['i'] + 1
+        Tabela['ain'] = TabelaH1.loc[tamanho-1].values[~np.isnan(TabelaH1.loc[tamanho-1].values)] #Solução Elegante -> usei masks para remover os NaN
+        Tabela['xn-(i-1)'] = rol[Tabela['n-(i-1)'].astype(int)-1]
+        Tabela['xi'] = rol[Tabela['i'].astype(int)-1]
+        Tabela['ain(xn-(i-1)-xi'] = Tabela['ain']*(Tabela['xn-(i-1)']-Tabela['xi'])
+
+
+        #b = somatorio de ain(xn-(i-1)-xi) (1,n/2)
+        #wcalc= b² / Somatório de (xi - x|)²
+
+        b = Tabela['ain(xn-(i-1)-xi'].sum()
+        Wcalc = (b**2)/((rol - Media)**2).sum()
+        Wc = TabelaH2.loc[tamanho-3, str(alpha)]
+
+        print('\nTabela')
+        Tabela
+        print('\n')
+
+        print('Wcalc = ',Wcalc)
+        print('Wc = ',Wc)
+
+
+        if Wcalc >=  Wc:
+            print('\nWcalc >= Wc --> Aceita H0')
+            return True
+        else:
+            print('\nWcalc < Wc --> Rejeita H0')
+            return False
+
+  else:
+
+        stat, p = shapiro(rol)
+
+        if p > alpha:
+            print('\np > alpha --> Aceita H0')
+
+            return True
+
+        else:
+            print('\np < alpha --> Rejeita H0')
+            return False
+
+# Casos de teste
+
+#ct001 - Shapiro-Wilk --> Teste com sucesso
+ProdMaqAgric = np.array([52 ,50 ,36 ,40 ,30, 42, 38, 38, 52, 44, 36, 34, 50 ,42 ,34, 55, 36, 55, 42, 52, 34, 48, 55, 44 ,44 ,30 ,48 ,40, 40, 44 ,40 ,44 ,38 ,36 ,50 ,42])
+#ct002 - Shapiro-Wilk --> Teste com sucesso
+Normal = np.random.normal(30,5,36)
+#ct003 - Shapiro-Wilk --> Teste de falha
+gama = np.random.gamma(2,2,36)
+#ct004 - Shapiro-Wilk --> Teste de falha
+cauchy = np.random.standard_cauchy(36)
+
+ShapiroWilk(ProdMaqAgric,0.05,36)
+ShapiroWilk(Normal,0.05,36)
+ShapiroWilk(gama,0.05,36)
+ShapiroWilk(cauchy,0.05,36)
+
+
+from scipy.stats import shapiro
+
+# Função para teste de Shapiro-Wilk automático
+def teste_shapiro_wilk_automatico(data):
+    for nome, conjunto in data.items():
+        print(f"\nTestando o conjunto de dados '{nome}':")
+        stat, p = shapiro(conjunto)
+        if p > 0.05:
+            print("Resultado: A amostra parece seguir uma distribuição normal.")
+        else:
+            print("Resultado: A amostra não parece seguir uma distribuição normal.")
+
+# Casos de teste
+casos_teste = {
+    "ProdMaqAgric": np.array([52, 50, 36, 40, 30, 42, 38, 38, 52, 44, 36, 34, 50, 42, 34, 55, 36, 55, 42, 52, 34, 48, 55, 44, 44, 30, 48, 40, 40, 44, 40, 44, 38, 36, 50, 42]),
+    "Normal": np.random.normal(30, 5, 36),
+    "gama": np.random.gamma(2, 2, 36),
+    "cauchy": np.random.standard_cauchy(36)
+}
+
+# Executando o teste de Shapiro-Wilk automaticamente
+teste_shapiro_wilk_automatico(casos_teste)
+plot_hist(ProdMaqAgric, Normal, gama, cauchy)
+
+# Tabela resumo dos resultados
+import pandas as pd
+import matplotlib.pyplot as plt
+from pandas.plotting import table
+
+# Supondo que temos os seguintes dados para a tabela
+dados = {
+    "Distribuicao": ["ProdMaqAgric", "Normal", "Gama", "Cauchy"],
+    "H0": ["Aceito", "Aceito", "Rejeitado", "Rejeitado"],
+    "H1": ["Rejeitado", "Rejeitado", "Aceito", "Aceito"]
+}
+
+# Convertendo os dados para um DataFrame do pandas
+df = pd.DataFrame(dados)
+
+# Criando uma figura sem eixos para a plotagem da tabela
+fig, ax = plt.subplots(figsize=(8, 3)) # Você pode ajustar o tamanho conforme necessário
+ax.axis('off') # Esconde os eixos
+
+# Plotando a tabela
+# O loc='center' centraliza a tabela na figura
+# O bbox_to_anchor ajusta a posição da tabela dentro da figura
+tbl = table(ax, df, loc='center', cellLoc='center', bbox=[0, 0, 1, 1])
+
+# Ajustando o estilo da tabela
+tbl.auto_set_font_size(False)
+tbl.set_fontsize(12) # Ajusta o tamanho da fonte
+tbl.auto_set_column_width(col=list(range(len(df.columns)))) # Ajusta a largura das colunas
+
+plt.title("Teste Shapiro-Wilk") # Adiciona um título, se desejado
+
+plt.show()
+
+# Alguns testes adicionais
+import numpy as np
+from scipy.stats import shapiro
+
+
+# Número de amostras
+num_amostras = 60
+
+# Lista para guardar as amostras
+lista_de_amostras = []
+
+# Gerar as amostras e adicionar à lista
+for _ in range(num_amostras):
+    amostra = np.random.rand(36)  # Gerar uma amostra de tamanho 36 com distribuição normal
+    lista_de_amostras.append(amostra)
+
+resultados = []
+
+for a in lista_de_amostras:
+
+  if ShapiroWilk(a) == True:
+    resultados.append('aceita H0')
+  elif ShapiroWilk(a) == False:
+    resultados.append('rejeita H0')
+
+
+print(resultados)
+
+plot_hist(resultados,*lista_de_amostras)
